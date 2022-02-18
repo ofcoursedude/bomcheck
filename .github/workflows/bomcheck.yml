@@ -1,0 +1,72 @@
+name: Build bomcheck
+
+on:
+  push:
+    branches: [main]
+    paths: [src/**, .github/workflows/bomcheck.yml]
+  pull_request:
+    branches: [main]
+    paths: [src/**, .github/workflows/bomcheck.yml]
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Build Linux
+        run: dotnet build src/bomcheck --self-contained -r linux-x64
+      - name: Publish Linux
+        if: ${{ github.event_name == 'push'}}
+        run: dotnet publish src/bomcheck/bomcheck.csproj -o out/linux -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=true
+      - name: Upload artifacts Linux
+        if: ${{ github.event_name == 'push'}}
+        uses: actions/upload-artifact@v2.3.1
+        with:
+          name: bomcheck-linux
+          path: out/linux/bomcheck
+          retention-days: 30
+
+  build_windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Build Windows
+        run: dotnet build src/bomcheck --self-contained -r win10-x64
+      - name: Publish Windows
+        if: ${{ github.event_name == 'push'}}
+        run: dotnet publish src/bomcheck/bomcheck.csproj -o out/windows -r win10-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=true
+      - name: Upload artifacts Windows
+        if: ${{ github.event_name == 'push'}}
+        uses: actions/upload-artifact@v2.3.1
+        with:
+          name: bomcheck-windows
+          path: out/windows/bomcheck.exe
+          retention-days: 30
+
+  build_and_pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Pack
+        run: dotnet pack src/bomcheck -p:Version=0.0.2.6-preview.${{github.run_number}} -o out/pack
+      - name: Push
+        run: dotnet nuget push out/pack/bomcheck.0.0.2.6-preview.${{github.run_number}}.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+      - name: Publish nupkg
+        if: ${{ github.event_name == 'push'}}
+        uses: actions/upload-artifact@v2.3.1
+        with:
+          name: bomcheck-nupkg
+          path: out/pack/**
+          retention-days: 30
