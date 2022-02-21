@@ -60,9 +60,11 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Pack
-        run: dotnet pack src/bomcheck -p:Version=0.0.3.1-preview.${{github.run_number}} -o out/pack
+        run: dotnet pack src/bomcheck -p:Version=0.0.3.${{github.run_number}} -o out/pack
+        #run: dotnet pack src/bomcheck -p:Version=0.0.3.1-preview.${{github.run_number}} -o out/pack
       - name: Push
-        run: dotnet nuget push out/pack/bomcheck.0.0.3.1-preview.${{github.run_number}}.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push out/pack/bomcheck.0.0.3.${{github.run_number}}.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+        #run: dotnet nuget push out/pack/bomcheck.0.0.3.1-preview.${{github.run_number}}.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
       - name: Publish nupkg
         if: ${{ github.event_name == 'push'}}
         uses: actions/upload-artifact@v2.3.1
