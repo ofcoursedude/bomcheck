@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
@@ -9,5 +9,17 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>bomcheck</ToolCommandName>
     <PackageOutputPath>./bin/nupkg</PackageOutputPath>
+    <Description>CLI-based BOM checker and remover</Description>
+    <Copyright>MIT</Copyright>
+    <PackageProjectUrl>https://github.com/ofcoursedude/bomcheck</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ofcoursedude/bomcheck</RepositoryUrl>
+    <Authors>ofcoursedude</Authors>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 </Project>
