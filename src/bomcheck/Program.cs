@@ -3,8 +3,8 @@ using System.Text;
 
 if (args.Length == 0)
 {
-    Console.WriteLine("Usage: bomcheck[.exe] <root_folder> [--autofix|-af]");
-    Console.WriteLine("Examples: bomcheck.exe .\\repo -autofix");
+    Console.WriteLine("Usage: bomcheck[.exe] <root_folder> [--autofix|-af] [--skip-node-modules|-snm]");
+    Console.WriteLine("Examples: bomcheck.exe .\\repo --autofix -snm");
     Console.WriteLine("          ./bomcheck ./repo");
     Console.WriteLine("Note: Only files with size under approx. 2GB (int32) are supported.");
     return;
@@ -38,8 +38,13 @@ var files = Directory.GetFiles(path, "*.*", new EnumerationOptions()
     RecurseSubdirectories = true,
     ReturnSpecialDirectories = false
 });
+var toCheck = files.AsEnumerable();
+if (args.Any(x => x.Equals("--skip-node-modules", StringComparison.InvariantCultureIgnoreCase) || x.Equals("-snm", StringComparison.InvariantCultureIgnoreCase)))
+{
+    toCheck = toCheck.Where(x => !x.Contains("node_modules"));
+}
 
-await Parallel.ForEachAsync(files, new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 },
+await Parallel.ForEachAsync(toCheck, new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 },
     async (file, ct) =>
     {
         await using var fs = File.OpenRead(file);
