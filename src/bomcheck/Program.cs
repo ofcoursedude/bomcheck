@@ -3,18 +3,19 @@ using System.Text;
 
 if (args.Length == 0)
 {
-    Console.WriteLine("Usage: bomcheck[.exe] <root_folder> [--autofix|-af] [--skip-node-modules|-snm]");
+    Console.WriteLine(
+        "Usage: bomcheck[.exe] <root_folder> [--autofix|-af] [--skip-node-modules|-snm] [--fail-on-bom|-fob] [--fail-fast|-ff]");
     Console.WriteLine("Examples: bomcheck.exe .\\repo --autofix -snm");
     Console.WriteLine("          ./bomcheck ./repo");
     Console.WriteLine("Note: Only files with size under approx. 2GB (int32) are supported.");
-    return;
+    Environment.Exit(-1);
 }
 
 var path = Path.GetFullPath(args[0]);
 if (!Directory.Exists(path))
 {
     Console.WriteLine($"Root folder {path} not found.");
-    return;
+    Environment.Exit(-1);
 }
 
 Console.WriteLine($"Will check {path}...");
@@ -22,6 +23,20 @@ Console.WriteLine($"Will check {path}...");
 var autofix = args.Any(x =>
     x.Equals("--autofix", StringComparison.InvariantCultureIgnoreCase) ||
     x.Equals("-af", StringComparison.InvariantCultureIgnoreCase));
+
+var failOnBom = args.Any(x =>
+    x.Equals("--fail-on-bom", StringComparison.InvariantCultureIgnoreCase) ||
+    x.Equals("-fob", StringComparison.InvariantCultureIgnoreCase));
+
+var failFast = args.Any(x =>
+    x.Equals("--fail-fast", StringComparison.InvariantCultureIgnoreCase) ||
+    x.Equals("-ff", StringComparison.InvariantCultureIgnoreCase));
+
+if (autofix && failOnBom)
+{
+    Console.WriteLine("--autofix and --fail-on-bom are mutually exclusive.");
+    Environment.Exit(-1);
+}
 
 var enc = new UTF8Encoding(true);
 var preamble = enc.GetPreamble();
@@ -39,7 +54,8 @@ var files = Directory.GetFiles(path, "*.*", new EnumerationOptions()
     ReturnSpecialDirectories = false
 });
 var toCheck = files.AsEnumerable();
-if (args.Any(x => x.Equals("--skip-node-modules", StringComparison.InvariantCultureIgnoreCase) || x.Equals("-snm", StringComparison.InvariantCultureIgnoreCase)))
+if (args.Any(x => x.Equals("--skip-node-modules", StringComparison.InvariantCultureIgnoreCase) ||
+                  x.Equals("-snm", StringComparison.InvariantCultureIgnoreCase)))
 {
     toCheck = toCheck.Where(x => !x.Contains("node_modules"));
 }
@@ -63,7 +79,10 @@ await Parallel.ForEachAsync(toCheck, new ParallelOptions() { MaxDegreeOfParallel
 
         Console.WriteLine($"File {file} has a BOM");
         Interlocked.Increment(ref bomFiles);
-        if (!autofix) return;
+        if (!autofix)
+        {
+            if (failFast && failOnBom) Environment.Exit(-1);
+        }
 
         if (fs.Length > int.MaxValue)
         {
@@ -96,3 +115,9 @@ Console.WriteLine($"Files with BOM: {bomFiles}");
 Console.WriteLine($"Fixed files:    {fixedFiles}");
 Console.WriteLine($"Skipped files:  {skippedFiles}");
 Console.WriteLine($"Total files:    {files.Length}");
+
+if (failOnBom && bomFiles > 0)
+{
+    Console.WriteLine("Failed due to --fail-on-bom.");
+    Environment.Exit(-1);
+}

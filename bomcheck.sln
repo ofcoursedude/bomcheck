@@ -9,6 +9,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4D811D2B-C98A-4407-88D9-F0F0B2DF5B41}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\bomcheck.yml = .github\workflows\bomcheck.yml
+		.gitignore = .gitignore
+		.whitesource = .whitesource
+		LICENSE = LICENSE
 	EndProjectSection
 EndProject
 Global
