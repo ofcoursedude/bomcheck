@@ -82,6 +82,7 @@ await Parallel.ForEachAsync(toCheck, new ParallelOptions() { MaxDegreeOfParallel
         if (!autofix)
         {
             if (failFast && failOnBom) Environment.Exit(-1);
+            return;
         }
 
         if (fs.Length > int.MaxValue)
