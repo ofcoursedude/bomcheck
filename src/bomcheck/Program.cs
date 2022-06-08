@@ -1,8 +1,11 @@
 using System.Buffers;
+using System.Reflection;
 using System.Text;
 
 if (args.Length == 0)
 {
+    var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "'unknown'";
+    Console.WriteLine($"{Assembly.GetExecutingAssembly().GetName().Name} version {version}");
     Console.WriteLine(
         "Usage: bomcheck[.exe] <root_folder> [--autofix|-af] [--skip-node-modules|-snm] [--fail-on-bom|-fob] [--fail-fast|-ff]");
     Console.WriteLine("Examples: bomcheck.exe .\\repo --autofix -snm");
