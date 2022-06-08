@@ -7,7 +7,7 @@ if (args.Length == 0)
         "Usage: bomcheck[.exe] <root_folder> [--autofix|-af] [--skip-node-modules|-snm] [--fail-on-bom|-fob] [--fail-fast|-ff]");
     Console.WriteLine("Examples: bomcheck.exe .\\repo --autofix -snm");
     Console.WriteLine("          ./bomcheck ./repo");
-    Console.WriteLine("Note: Only files with size under approx. 2GB (int32) are supported.");
+    Console.WriteLine("Note: Only files with size under approx. 2GB (int32) are supported for automated fixing.");
     Environment.Exit(-1);
 }
 
